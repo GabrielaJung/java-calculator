@@ -9,6 +9,9 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Button num_zero, one, two, three, four, five, six, seven, eight, nine,
@@ -38,6 +41,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         sum.setOnClickListener(this);
         multiply.setOnClickListener(this);
         div.setOnClickListener(this);
+
+        /**
+         * Limpa valores de expressão e resultado
+         * */
+        clear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                txt_expressao.setText("");
+                txt_resultado.setText("");
+            }
+        });
+
+        equal.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    Expression expression = new ExpressionBuilder(txt_expressao.getText().toString()).build();
+                    double result = expression.evaluate();
+                    long longResult = (long) result;
+
+                    txt_expressao.setText("");
+
+                    if(result == (double) longResult){
+                        txt_resultado.setText((CharSequence) String.valueOf(longResult));
+                    } else {
+                        txt_resultado.setText((CharSequence) String.valueOf(result));
+                    }
+                } catch (Exception e){
+                    Toast.makeText(
+                            getBaseContext(),
+                            "erro " + e,
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 
     private void InitComponents(){
@@ -67,16 +105,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void AddExpression(String string, boolean cleanData){
         if(txt_resultado.getText().equals("")){
-            txt_expressao.setText("");
+            txt_expressao.setText(" ");
         }
 
         if(cleanData){
-            txt_resultado.setText("");
+            txt_resultado.setText(" ");
             txt_expressao.append(string);
         }else{
             txt_expressao.append(txt_resultado.getText());
             txt_expressao.append(string);
-            txt_resultado.setText("");
+            txt_resultado.setText(" ");
         }
     }
 
@@ -115,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (view.getId() == R.id.nine){
             AddExpression("9", true);
         } else if (view.getId() == R.id.comma){
-            AddExpression(",", true);
+            AddExpression(".", true);
         } else if (view.getId() == R.id.sum){
             AddExpression("+", false);
         } else if (view.getId() == R.id.sub){
