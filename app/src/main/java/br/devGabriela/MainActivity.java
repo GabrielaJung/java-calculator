@@ -1,31 +1,40 @@
 package br.devGabriela;
 
-import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private Button num_zero, one, two, three, four, five, six, seven, eight, nine,
+    // criando variáveis de button e textview com os nomes dos ids
+     private Button num_zero, one, two, three, four, five, six, seven, eight, nine,
             comma, sum, sub, multiply, div, equal, history, clear;
 
     private TextView txt_expressao, txt_resultado;
+
+    // ArrayList que irá conter valores em String para colocar no histórico
+    public ArrayList<String> historicCalc = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         InitComponents();
 
+        /**
+         * Ao clicar em um botão, aciona o evento onclick, passando o próprio elemento
+         * como parâmetro para a função
+         */
         num_zero.setOnClickListener(this);
         one.setOnClickListener(this);
         two.setOnClickListener(this);
@@ -41,9 +50,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         sum.setOnClickListener(this);
         multiply.setOnClickListener(this);
         div.setOnClickListener(this);
+        history.setOnClickListener(this);
 
         /**
-         * Limpa valores de expressão e resultado
+         * Limpa valores de expressão e resultado ao clicar no Button clear
          * */
         clear.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -53,14 +63,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
+        /**
+         *  Ao clicar no botão de igual, os cálculos são realizados por meio da biblioteca
+         *  objecthunter implementada.
+         */
         equal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 try {
+                    // constrói a expressão
                     Expression expression = new ExpressionBuilder(txt_expressao.getText().toString()).build();
+
+                    // retorna resultado
                     double result = expression.evaluate();
                     long longResult = (long) result;
 
+                    // grava expressao antes de apagar
+                    String expressao = txt_expressao.getText().toString();
+
+                    // limpa campo de expressão
                     txt_expressao.setText("");
 
                     if(result == (double) longResult){
@@ -68,6 +89,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     } else {
                         txt_resultado.setText((CharSequence) String.valueOf(result));
                     }
+
+                    // adiciona valor no arrayList do histórico de cálculos
+                    String resultHistoric = expressao + " = " + txt_resultado.getText();
+                    historicCalc.add(resultHistoric);
+
                 } catch (Exception e){
                     Toast.makeText(
                             getBaseContext(),
@@ -78,8 +104,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
+    /**
+     * Seta valores para variáveis iniciais conforme o elemento encontrado pelo seu id
+     */
     private void InitComponents(){
-
         num_zero = findViewById(R.id.num_zero);
         one = findViewById(R.id.one);
         two = findViewById(R.id.two);
@@ -100,9 +128,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         equal = findViewById(R.id.equal);
         txt_expressao = findViewById(R.id.txt_expressao);
         txt_resultado = findViewById(R.id.txt_resultado);
-
     }
 
+    /**
+     * Função que adiciona uma expressão conforme os valores digitados pelo usuário
+     * @param string valor digitado
+     * @param cleanData true l false
+     */
     public void AddExpression(String string, boolean cleanData){
         if(txt_resultado.getText().equals("")){
             txt_expressao.setText(" ");
@@ -118,6 +150,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    /**
+     * Esta função emite um Toast de info
+     * @param v
+     */
     public void infoFn(View v){
         Toast.makeText(
                 getBaseContext(),
@@ -125,14 +161,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Toast.LENGTH_LONG).show();
     }
 
-    public void openHistory(View v){
-        Intent it = new Intent (getBaseContext(), History.class);
-        startActivity(it);
-    }
-
+    /**
+     * Função de onclick dos botões
+     * @param view O view que foi clicado.
+     */
     @Override
     public void onClick(View view) {
+        // compara o id do botão clicado com o id de botões específicos
         if (view.getId() == R.id.num_zero){
+            // adiciona o valor do número clicado na expresão
             AddExpression("0", true);
         } else if (view.getId() == R.id.one){
             AddExpression("1", true);
@@ -162,6 +199,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             AddExpression("*", false);
         } else if (view.getId() == R.id.div){
             AddExpression("/", false);
+        } else if (view.getId() == R.id.history){
+            // envia para a tela de histórico, passando o arrayList de histórico como extra
+            Intent it = new Intent (getBaseContext(), HistoricActivity.class);
+            it.putStringArrayListExtra("historicCalc", historicCalc);
+            startActivity(it);
         }
 
     }
